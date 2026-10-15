@@ -59,6 +59,9 @@ import java.util.concurrent.atomic.AtomicLong
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
+import androidx.media3.datasource.DataSource
+import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.datasource.cache.Cache
 
 internal class PlayerMediaSourceFactory(private val context: Context) {
     private var customExtractorsFactory: ExtractorsFactory? = null
@@ -181,9 +184,12 @@ internal class PlayerMediaSourceFactory(private val context: Context) {
         val isHls = resolvedMimeType == MimeTypes.APPLICATION_M3U8
         val isDash = resolvedMimeType == MimeTypes.APPLICATION_MPD
         val httpDataSourceFactory = if (isHls || isDash) {
-            PlayerPlaybackNetworking.createHttpDataSourceFactory(
-                sanitizedHeaders,
-                useLongReadTimeout = isLoopbackUrl(url),
+            DefaultDataSource.Factory(
+                context,
+                PlayerPlaybackNetworking.createHttpDataSourceFactory(
+                    sanitizedHeaders,
+                    useLongReadTimeout = isLoopbackUrl(url),
+                ),
             )
         } else {
             PlayerPlaybackNetworking.createDataSourceFactory(context, sanitizedHeaders)
